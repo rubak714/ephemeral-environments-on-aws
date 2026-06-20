@@ -14,6 +14,7 @@ crash.*.log
 
 # Claude Code local state and memory
 .claude/
+CLAUDE.md
 
 # Private build notes and playbooks — not part of the public repo
 docs/
