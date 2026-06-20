@@ -91,4 +91,10 @@ This pipeline uses GitHub OIDC to assume an AWS IAM role at runtime. There are n
 
 ---
 
-*Built by Rubaiya Kabir. Targeting a Junior Cloud Engineering consulting role. The commit history shows how the work progressed phase by phase.*
+## 🤖 How I built this
+
+I built this project with AI assistance (Claude Code), the same way most engineers work today. I use these tools to move quickly through boilerplate and mechanics, so I can spend my attention on the parts that matter: the design decisions, the trade-offs, and the problem solving. I drove every decision, measured every result myself, and I can explain every line.
+
+---
+
+*Built by Rubaiya Kabir. Targeting a Junior Cloud Engineering role. The commit history shows how the work progressed phase by phase.*
