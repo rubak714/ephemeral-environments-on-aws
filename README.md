@@ -110,4 +110,8 @@ I built this project with AI assistance (Claude Code), the same way most enginee
 
 ---
 
-*Built by Rubaiya Kabir. Targeting a Junior Cloud Engineering role. The commit history shows how the work progressed phase by phase.*
+## 🤝 Contributing
+
+This is an open portfolio project. Feedback, suggestions, and pull requests are welcome.
+
+If something in the setup does not work, open an issue and describe what step failed and what error appeared. If you want to improve the Terraform, the workflow, or the documentation, open a pull request against `main`. See [CONTRIBUTING.md](CONTRIBUTING.md) for details.
