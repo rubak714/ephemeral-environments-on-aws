@@ -17,7 +17,9 @@ The example app is a small URL shortener. It exists only to give the automation 
 
 ## 🗺️ Architectural Design
 
-![Architecture diagram](images/aws-project-diagram.svg)
+<p align="center">
+  <img src="images/aws-project-diagram.svg" width="820" alt="Architecture diagram">
+</p>
 
 A pull request triggers a GitHub Actions workflow that assumes an AWS IAM role via OIDC (no stored credentials), provisions a fresh isolated environment with Terraform, runs an integration test against the deployed URL, and posts that URL as a PR comment. When the PR closes, Terraform destroys the environment and all its resources.
 
