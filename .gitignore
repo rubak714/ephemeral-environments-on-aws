@@ -16,8 +16,9 @@ crash.*.log
 .claude/
 CLAUDE.md
 
-# Private build notes and playbooks — not part of the public repo
-docs/
+# Private build notes — not part of the public repo
+docs/*
+!docs/manual-baseline.md
 
 # Python
 __pycache__/
