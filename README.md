@@ -15,6 +15,16 @@ The example app is a small URL shortener. It exists only to give the automation 
 
 ---
 
+## 🗺️ Architectural Design
+
+![Architecture diagram](images/aws-project-diagram.svg)
+
+A pull request triggers a GitHub Actions workflow that assumes an AWS IAM role via OIDC (no stored credentials), provisions a fresh isolated environment with Terraform, runs an integration test against the deployed URL, and posts that URL as a PR comment. When the PR closes, Terraform destroys the environment and all its resources.
+
+The same GitHub Actions workflow handles both events: `apply` on PR open and `destroy` on PR close. I did not draw a separate arrow from GitHub Actions to the teardown box, because routing it across the full canvas makes the diagram harder to read. The behaviour is described here in text instead: one workflow, two triggers, one for creation and one for cleanup.
+
+---
+
 ## 🏛️ Stack
 
 | Tool | Role |
@@ -67,9 +77,10 @@ The four metrics I am working toward:
 ├── app/           # Python Lambda handler
 ├── infra/         # Terraform modules
 ├── .github/       # GitHub Actions workflows
+├── images/        # Architecture diagrams
 ├── cli/           # Go CLI tool (envctl), added in the final stretch
 ├── aws-native/    # Stretch A: CodePipeline and CloudFormation
-├── docs/          # Build playbook and runbooks
+├── docs/          # Build playbook and runbooks (local only, not in repo)
 └── Makefile
 ```
 
