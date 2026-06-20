@@ -7,6 +7,51 @@ metric honest.
 
 ---
 
+## What I am building and in what order
+
+I create the three resources in this order because each one depends on the
+previous. DynamoDB must exist before Lambda (Lambda needs the table name).
+Lambda must exist before API Gateway (API Gateway needs a function to call).
+
+```
+  1. DynamoDB Table
+     stores: short_id → long_url
+     (created first, no dependencies)
+          |
+          | Lambda reads and writes here
+          |
+  2. Lambda Function
+     runs: handler.py
+     (needs the table name as an environment variable)
+          |
+          | API Gateway forwards requests here
+          |
+  3. API Gateway
+     receives: HTTP requests from the internet
+     (created last, pointed at Lambda)
+```
+
+Once all three exist, a request travels like this:
+
+```
+  Browser or curl
+        |
+        v
+  API Gateway          receives the HTTP request
+        |
+        v
+  Lambda (handler.py)  runs the Python code
+        |
+        v
+  DynamoDB             reads or writes the URL mapping
+        |
+        | result travels back up the same chain
+        v
+  Browser or curl      gets the short_id or follows the 301 redirect
+```
+
+---
+
 ## Before I start
 
 - Start a stopwatch at Step 1. Stop it after the final teardown step.
