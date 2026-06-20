@@ -23,6 +23,34 @@ The example app is a small URL shortener. It exists only to give the automation 
 
 A pull request triggers a GitHub Actions workflow that assumes an AWS IAM role via OIDC (no stored credentials), provisions a fresh isolated environment with Terraform, runs an integration test against the deployed URL, and posts that URL as a PR comment. When the PR closes, Terraform destroys the environment and all its resources.
 
+**How a request flows through the system:**
+
+```
+  Developer opens a PR on GitHub
+        |
+        v
+  GitHub Actions          triggers the workflow automatically
+        |
+        v
+  OIDC to AWS             assumes an IAM role, no stored credentials
+        |
+        v
+  Terraform apply         provisions a fresh isolated environment for that PR
+        |
+        +-----------------------------+
+        |                             |
+        v                             v
+  API Gateway                   DynamoDB Table
+  (front door, receives          (stores short_id
+   HTTP requests)                 to long_url mapping)
+        |
+        v
+  Lambda (handler.py)     runs the URL shortener logic
+        |
+        v
+  Response back to caller (short_id on POST, 301 redirect on GET)
+```
+
 The same GitHub Actions workflow handles both events: `apply` on PR open and `destroy` on PR close. I did not draw a separate arrow from GitHub Actions to the teardown box, because routing it across the full canvas makes the diagram harder to read. The behaviour is described here in text instead: one workflow, two triggers, one for creation and one for cleanup.
 
 ---
