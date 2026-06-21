@@ -195,30 +195,42 @@ Start the stopwatch again, or keep it running to time end to end.
 
 ## Results
 
-I fill these in after the run. These numbers go into the final
-README and the CV line.
+These numbers were measured on 21 June 2026. They go into the final
+README and the CV line as the honest "before" baseline.
 
 | Metric | Value |
 |--------|-------|
-| Deployment steps (Steps 1 to 38) | [MEASURED: count after run] |
-| Deployment time | [MEASURED: fill in after run] |
-| Teardown steps (Steps 39 to 48) | [MEASURED: count after run] |
-| Teardown time | [MEASURED: fill in after run] |
-| Total steps | [MEASURED: fill in after run] |
-| Total time | [MEASURED: fill in after run] |
-| Mistakes made | [MEASURED: fill in after run] |
+| Deployment steps (Steps 1 to 38) | 38 steps |
+| Deployment time | 35 minutes 5 seconds |
+| Teardown steps (Steps 39 to 48) | 10 steps |
+| Teardown time | 3 minutes 56 seconds |
+| Total steps | 48 steps |
+| Total time | 39 minutes 1 second |
+| Mistakes made | 0 errors requiring a redo |
+
+### Proof screenshots
+
+**POST /shorten: creating a short URL**
+
+![POST curl response](../images/phase-1/post-curl-response.png)
+
+**GET /{id}: following the redirect**
+
+![GET curl response](../images/phase-1/get-curl-response.png)
+
+**DynamoDB: the item stored in the table**
+
+![DynamoDB items](../images/phase-1/dynamodb-inside-items.png)
 
 ---
 
-## Mistakes
+## Navigation notes
 
-I record any step where I made an error and had to redo it. Recording
-real errors honestly is more credible than a runbook that claims
-everything went perfectly the first time.
-
-| Step # | What went wrong | How I fixed it |
-|--------|----------------|----------------|
-| | | |
+No steps required a redo. However, locating the **Configuration** tab and
+the **Permissions** sub-section inside the Lambda console was not obvious
+on first look and cost approximately 3 to 4 minutes. This is the kind of
+friction the automation eliminates entirely. Terraform sets permissions
+in code with no console navigation required.
 
 ---
 
