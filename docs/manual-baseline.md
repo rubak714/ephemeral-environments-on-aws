@@ -1,152 +1,144 @@
-# Manual Baseline Runbook
+# 📋 Manual Baseline Runbook
 
-A step-by-step record of deploying the URL shortener by hand, before any
-automation exists. I follow this with a stopwatch running and count every
-click and command. The result is the "before" number that makes every later
-metric honest.
+Deploying the URL shortener by hand before any automation exists.
+Every step is counted and timed. The result is the honest **before** number.
 
 ---
 
-## What I am building and in what order
-
-I create the three resources in this order because each one depends on the
-previous. DynamoDB must exist before Lambda (Lambda needs the table name).
-Lambda must exist before API Gateway (API Gateway needs a function to call).
+## 🏗️ What I am building and in what order
 
 ```
-  1. DynamoDB Table
-     stores: short_id → long_url
-     (created first, no dependencies)
-          |
-          | Lambda reads and writes here
-          |
-  2. Lambda Function
-     runs: handler.py
-     (needs the table name as an environment variable)
-          |
-          | API Gateway forwards requests here
-          |
-  3. API Gateway
-     receives: HTTP requests from the internet
-     (created last, pointed at Lambda)
+  1️⃣  DynamoDB Table
+      stores: short_id to long_url
+      (no dependencies, created first)
+           |
+           | Lambda reads and writes here
+           |
+  2️⃣  Lambda Function
+      runs: handler.py
+      (needs the table name as an environment variable)
+           |
+           | API Gateway forwards requests here
+           |
+  3️⃣  API Gateway
+      receives: HTTP requests from the internet
+      (created last, depends on Lambda)
 ```
 
-Once all three exist, a request travels like this:
+**Request flow once all three are live:**
 
 ```
   Browser or curl
         |
         v
-  API Gateway          receives the HTTP request
+  🌐 API Gateway       receives the HTTP request
         |
         v
-  Lambda (handler.py)  runs the Python code
+  ⚡ Lambda            runs the Python code
         |
         v
-  DynamoDB             reads or writes the URL mapping
+  🗄️ DynamoDB          reads or writes the URL mapping
         |
-        | result travels back up the same chain
         v
   Browser or curl      gets the short_id or follows the 301 redirect
 ```
 
 ---
 
-## Before I start
+## ⏱️ Before I start
 
-- Start a stopwatch at Step 1. Stop it after the final teardown step.
-- I count every numbered step as I go. If I make a mistake and have to
-  redo a step, I count the redo as an extra step.
-- Record any mistakes in the Mistakes section at the bottom.
-- Region must be eu-central-1 (Frankfurt) for everything.
+- ✅ Start a stopwatch at Step 1
+- ✅ Count every numbered step, including redos
+- ✅ Region: **eu-central-1 (Frankfurt)** for everything
+- ✅ Record mistakes in the Mistakes section below
 
 ---
 
-## Part 1: Deploy
+## 🚀 Part 1: Deploy
 
-### A. Create the DynamoDB table
+### 🗄️ A. Create the DynamoDB table
 
-1. Open the AWS Console. Navigate to **DynamoDB**.
-2. Click **Create table**.
+1. Open the AWS Console, navigate to **DynamoDB**
+2. Click **Create table**
 3. Table name: `urls-manual`
-4. Partition key: `id`, type **String**.
-5. Leave everything else as default (on-demand capacity mode is fine).
-6. Click **Create table**. Wait for the status to show **Active**.
+4. Partition key: `id`, type **String**
+5. Leave all defaults (on-demand capacity is fine)
+6. Click **Create table**, wait for status **Active**
 
-### B. Prepare the Lambda handler
+---
 
-7. The handler is already in the repository at `app/handler.py`. Copy that
-   file to a convenient location on the local machine (the Desktop is fine),
-   then zip it:
+### ⚡ B. Prepare the Lambda handler
 
-8. Zip the file. In the terminal:
+7. Copy `app/handler.py` from the repository to the Desktop
+8. Zip it in the terminal:
 
 ```bash
-cd ~/Desktop          # or wherever handler.py was saved
+cd ~/Desktop
 zip handler.zip handler.py
 ```
 
-### C. Create the Lambda function
+---
 
-9. In the AWS Console, navigate to **Lambda**.
-10. Click **Create function**.
-11. Choose **Author from scratch**.
-12. Function name: `url-shortener-manual`
-13. Runtime: **Python 3.11**
-14. Architecture: **arm64**
-15. Click **Create function**.
-16. On the function page, scroll to **Code source**. Click **Upload from**,
-    choose **.zip file**, and upload `handler.zip`.
-17. Click **Save**.
-18. Scroll to **Runtime settings**, click **Edit**, confirm Handler is
-    `handler.lambda_handler`. Save.
+### ⚙️ C. Create the Lambda function
 
-### D. Add the DynamoDB environment variable
+9. Navigate to **Lambda** in the AWS Console
+10. Click **Create function**, choose **Author from scratch**
+11. Function name: `url-shortener-manual`
+12. Runtime: **Python 3.11**
+13. Architecture: **arm64**
+14. Click **Create function**
+15. Scroll to **Code source**, click **Upload from** > **.zip file**, upload `handler.zip`
+16. Click **Save**
+17. Go to **Runtime settings** > **Edit**, confirm handler is `handler.lambda_handler`, save
 
-19. Click the **Configuration** tab, then **Environment variables**, then **Edit**.
-20. Click **Add environment variable**.
+---
+
+### 🔗 D. Add the DynamoDB environment variable
+
+18. Click **Configuration** tab > **Environment variables** > **Edit**
+19. Click **Add environment variable**
     - Key: `TABLE_NAME`
     - Value: `urls-manual`
-21. Click **Save**.
+20. Click **Save**
 
-### E. Grant the Lambda permission to read and write DynamoDB
+---
 
-22. Still on the **Configuration** tab, click **Permissions**.
-23. Click the role name link (opens IAM in a new tab).
-24. Click **Add permissions**, then **Attach policies**.
-25. Search for `AmazonDynamoDBFullAccess`. Check the box next to it.
-    (Note: in a real production setup I would write a least-privilege
-    policy instead of using the managed full-access policy. For this
-    manual baseline, the managed policy is acceptable because the
-    environment is destroyed at the end.)
-26. Click **Add permissions**.
+### 🔒 E. Grant Lambda permission to access DynamoDB
 
-### F. Create the API Gateway
+21. Click **Configuration** > **Permissions**
+22. Click the role name link (opens IAM in a new tab)
+23. Click **Add permissions** > **Attach policies**
+24. Search for `AmazonDynamoDBFullAccess`, check the box
+25. Click **Add permissions**
 
-27. In the AWS Console, navigate to **API Gateway**.
-28. Click **Create API**.
-29. Under **HTTP API**, click **Build**.
-30. Click **Add integration**. Choose **Lambda**. Select the region
-    `eu-central-1` and the function `url-shortener-manual`.
-31. API name: `url-shortener-manual-api`
-32. Click **Next**.
-33. On the **Configure routes** screen, there will be a default route.
-    Change it to:
-    - Method: `POST`
-    - Resource path: `/shorten`
-    - Integration target: `url-shortener-manual`
-34. Click **Add route** and add a second route:
-    - Method: `GET`
-    - Resource path: `/{id}`
-    - Integration target: `url-shortener-manual`
-35. Click **Next**, then **Next** again (default stage is fine).
-36. Click **Create**. Copy the **Invoke URL** shown on the confirmation
-    screen. It looks like:
-    `https://xxxxxxxxxx.execute-api.eu-central-1.amazonaws.com`
+> In production I would write a least-privilege policy. The managed policy
+> is acceptable here because the environment is destroyed at the end.
 
-### G. Test the deployment
+---
 
-37. Open a terminal. Run this command, replacing YOUR_API_URL with the invoke URL copied in Step 36:
+### 🌐 F. Create the API Gateway
+
+26. Navigate to **API Gateway** in the AWS Console
+27. Click **Create API**, then under **HTTP API** click **Build**
+28. Click **Add integration** > **Lambda**, select `url-shortener-manual`
+29. API name: `url-shortener-manual-api`, click **Next**
+30. On **Configure routes**, change the default route:
+    - Method: `POST`, path: `/shorten`, target: `url-shortener-manual`
+31. Click **Add route**, add a second route:
+    - Method: `GET`, path: `/{id}`, target: `url-shortener-manual`
+32. Click **Next** twice, then **Create**
+33. Click **Deploy**
+34. Go to **Stages** > **$default**, copy the **Invoke URL**
+
+```
+https://xxxxxxxxxx.execute-api.eu-central-1.amazonaws.com
+```
+
+---
+
+### ✅ G. Test the deployment
+
+35. Run the POST test, replacing `YOUR_API_URL` with the invoke URL from Step 34:
 
 ```bash
 curl -X POST https://YOUR_API_URL/shorten \
@@ -154,90 +146,79 @@ curl -X POST https://YOUR_API_URL/shorten \
   -d '{"url": "https://example.com"}'
 ```
 
-Expected response: `{"short_id": "xxxxxx"}`
+Expected: `{"short_id": "xxxxxx"}`
 
-38. Copy the `short_id` value. Run:
+36. Run the GET test, replacing `SHORT_ID` with the value returned above:
 
 ```bash
 curl -v https://YOUR_API_URL/SHORT_ID
 ```
 
-Expected: a `301` redirect with `Location: https://example.com` in the
-headers.
+Expected: `HTTP/1.1 301 Moved Permanently` with `location: https://example.com`
 
-**Stop the stopwatch here to record deployment time separately.**
-Record the time and step count in the Results section below.
+**⏹️ Stop the stopwatch. Record deployment time below.**
 
 ---
 
-## Part 2: Teardown
+## 🧹 Part 2: Teardown
 
-Start the stopwatch again, or keep it running to time end to end.
+Restart the stopwatch.
 
-39. In the AWS Console, navigate to **API Gateway**.
-40. Select `url-shortener-manual-api`. Click **Delete**. Confirm.
-41. Navigate to **Lambda**.
-42. Select `url-shortener-manual`. Click **Actions**, then **Delete**.
-    Confirm.
-43. Navigate to **DynamoDB**.
-44. Select `urls-manual`. Click **Delete**. Type the table name to confirm.
-45. Navigate to **IAM**.
-46. Click **Roles**. Search for the role that Lambda created (it will start
-    with `url-shortener-manual-role-`). Select it and click **Delete**.
-    Confirm.
-47. Navigate to **CloudWatch**, then **Log groups**.
-48. Find `/aws/lambda/url-shortener-manual`. Select it and click **Delete**.
-    Confirm.
+37. **API Gateway**: select `url-shortener-manual-api`, click **Delete**, confirm
+38. **Lambda**: select `url-shortener-manual`, click **Actions** > **Delete**, confirm
+39. **DynamoDB**: select `urls-manual`, click **Delete**, type the table name to confirm
+40. **IAM**: go to **Roles**, find `url-shortener-manual-role-*`, delete it
+41. **CloudWatch**: go to **Log groups**, find `/aws/lambda/url-shortener-manual`, delete it
 
-**Stop the stopwatch. Record the teardown time and step count below.**
+**⏹️ Stop the stopwatch. Record teardown time below.**
 
 ---
 
-## Results
+## 📊 Results
 
-These numbers were measured on 21 June 2026. They go into the final
-README and the CV line as the honest "before" baseline.
+> Measured on 21 June 2026.
 
 | Metric | Value |
 |--------|-------|
-| Deployment steps (Steps 1 to 38) | 38 steps |
+| Deployment steps (1 to 36) | 36 steps |
 | Deployment time | 35 minutes 5 seconds |
-| Teardown steps (Steps 39 to 48) | 10 steps |
+| Teardown steps (37 to 41) | 5 steps |
 | Teardown time | 3 minutes 56 seconds |
-| Total steps | 48 steps |
+| Total steps | 41 steps |
 | Total time | 39 minutes 1 second |
-| Mistakes made | 0 errors requiring a redo |
+| Errors requiring a redo | 0 |
 
-### Proof screenshots
+### 📸 Proof
 
-**POST /shorten: creating a short URL**
+**POST /shorten**
 
 ![POST curl response](../images/phase-1/post-curl-response.png)
 
-**GET /{id}: following the redirect**
+**GET /{id} redirect**
 
 ![GET curl response](../images/phase-1/get-curl-response.png)
 
-**DynamoDB: the item stored in the table**
+**DynamoDB item stored**
 
 ![DynamoDB items](../images/phase-1/dynamodb-inside-items.png)
 
 ---
 
-## Navigation notes
+## 📝 Navigation notes
 
-No steps required a redo. However, locating the **Configuration** tab and
-the **Permissions** sub-section inside the Lambda console was not obvious
-on first look and cost approximately 3 to 4 minutes. This is the kind of
-friction the automation eliminates entirely. Terraform sets permissions
-in code with no console navigation required.
+No steps required a redo. Locating **Configuration** and **Permissions**
+inside the Lambda console took 3 to 4 minutes on first use. Terraform
+eliminates this entirely: permissions are declared in code with no
+console navigation required.
 
 ---
 
-## What this baseline proves
+## 🎯 What this baseline proves
 
-Once the automation exists, I will compare:
-- Manual steps and time versus `terraform apply` time
-- Manual error rate versus zero (Terraform either works or it fails cleanly)
+| | Manual | Automated (Phase 2) |
+|-|--------|---------------------|
+| Steps | 41 | 1 command |
+| Time | 39 minutes | [MEASURED after Phase 2] |
+| Errors | 0 (navigation friction exists) | 0 |
 
-That comparison is the first honest metric in this project.
+The comparison between these two columns is the first honest metric in this project.
