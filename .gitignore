@@ -19,6 +19,7 @@ CLAUDE.md
 # Private build notes — not part of the public repo
 docs/*
 !docs/manual-baseline.md
+!docs/phase-1-learnings.md
 
 # Python
 __pycache__/
