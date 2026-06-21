@@ -119,6 +119,34 @@ not a production product.
 
 ---
 
+## 🔍 What a GET request actually does step by step
+
+When `curl -v https://uwwpqr4x6i.execute-api.eu-central-1.amazonaws.com/OddhuL` runs:
+
+```
+curl sends GET /OddhuL
+      ↓
+API Gateway receives it, forwards to Lambda
+      ↓
+Lambda reads path: /OddhuL
+strips the slash, gets: OddhuL
+      ↓
+Lambda asks DynamoDB: "do you have an item where id = OddhuL?"
+      ↓
+DynamoDB replies: yes, url = https://example.com
+      ↓
+Lambda sends back: 301, Location: https://example.com
+      ↓
+curl prints it in the terminal
+```
+
+The `-v` flag is verbose mode. It prints all headers including `location: https://example.com`,
+which is the proof the redirect worked. Without `-v`, the response body is empty and nothing useful prints.
+
+If DynamoDB had no record of `OddhuL`, Lambda would return `404 Not found` instead.
+
+---
+
 ## 📊 Phase 1 measured result
 
 | Metric | Value |
