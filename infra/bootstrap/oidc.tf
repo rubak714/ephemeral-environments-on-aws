@@ -131,6 +131,9 @@ data "aws_iam_policy_document" "github_actions_permissions" {
       "lambda:GetPolicy",
       "lambda:ListVersionsByFunction",
       "lambda:PublishVersion",
+      "lambda:TagResource",
+      "lambda:ListTags",
+      "lambda:GetFunctionCodeSigningConfig",
     ]
     resources = ["*"]
   }
