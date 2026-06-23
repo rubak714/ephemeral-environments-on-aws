@@ -52,11 +52,13 @@ jobs:
       # GitHub sends AWS a short-lived signed token. AWS verifies it,
       # then returns temporary credentials that last 15 minutes.
       # No AWS_ACCESS_KEY_ID or AWS_SECRET_ACCESS_KEY is ever stored.
+      # AWS_ROLE_ARN is stored as a GitHub Secret (not a variable).
+      # The region is hardcoded because it is not sensitive information.
       - name: Assume AWS role via OIDC
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: ${{ vars.AWS_ROLE_ARN }}
-          aws-region: ${{ vars.AWS_REGION }}
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: eu-central-1
 
       # Step 4: Download the AWS and archive providers declared in main.tf.
       # -input=false prevents Terraform from waiting for user input in CI.

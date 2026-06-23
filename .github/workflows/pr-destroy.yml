@@ -50,8 +50,8 @@ jobs:
       - name: Assume AWS role via OIDC
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: ${{ vars.AWS_ROLE_ARN }}
-          aws-region: ${{ vars.AWS_REGION }}
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: eu-central-1
 
       # Step 4: Init. Terraform needs to connect to the S3 backend
       # to load the state file that pr-deploy.yml wrote.
