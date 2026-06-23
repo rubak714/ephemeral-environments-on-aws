@@ -17,7 +17,7 @@ terraform {
   # The bucket and table were created by infra/bootstrap/.
   # Replace the bucket name with the value from: terraform -chdir=infra/bootstrap output state_bucket
   backend "s3" {
-    bucket         = "ephemeral-env-tfstate-REPLACE_WITH_YOUR_ACCOUNT_ID"
+    bucket         = "ephemeral-env-tfstate-896725786477"
     key            = "envs/terraform.tfstate"
     region         = "eu-central-1"
     dynamodb_table = "terraform-state-lock"
