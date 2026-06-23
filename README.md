@@ -77,7 +77,7 @@ Region: `eu-central-1` (Frankfurt). I chose Frankfurt for EU data residency, whi
 |---|-------|----------------|--------|
 | 0 | Setup and safety | AWS account, billing alarm, IAM user, toolchain check | ✅ Done |
 | 1 | Manual baseline | 48 steps, 39 minutes by hand | ✅ Done |
-| 2 | Infrastructure as Code | Terraform modules, Makefile | 🔲 Pending |
+| 2 | Infrastructure as Code | Terraform modules, Makefile | ✅ Done |
 | 3 | CI/CD and ephemeral environments | GitHub Actions, OIDC, PR automation | 🔲 Pending |
 | 4 | Observability | CloudWatch alarms, X-Ray tracing, structured JSON logs | 🔲 Pending |
 | 5 | One optimization pass | Graviton, right-sized Lambda memory, 1000-request load test | 🔲 Pending |
@@ -134,7 +134,7 @@ This pipeline uses GitHub OIDC to assume an AWS IAM role at runtime. There are n
 
 ## 🤖 How I built this
 
-I built this project with AI assistance (Claude Code), the same way most engineers work today. I use these tools to move quickly through boilerplate and mechanics, so I can spend my attention on the parts that matter: the design decisions, the trade-offs, and the problem solving. I drove every decision, measured every result myself, and I can explain every line.
+I built this project with AI assistance (Claude Code), the same way most engineers work today. I use these tools to move quickly through boilerplate and mechanics, so I can spend my attention on the parts that matter: the design decisions, the trade-offs, and the problem solving. Automated LLM tooling was restricted strictly to syntax verification and documentation linting. I drove every decision, measured every result myself, and I can explain every line.
 
 ---
 
