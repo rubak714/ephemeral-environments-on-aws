@@ -70,7 +70,14 @@ Terraform created the HTTP API with both routes and the live Invoke URL.
 | Steps | 41 | 1 command |
 | Time | 39 min 1 sec | Under 3 minutes |
 | Repeatable | No, click-by-click | Yes, identical every run |
-| Isolated per PR | No | Yes, `env_name=pr-123` |
+| Isolated per PR | No | Yes, via `env_name` variable |
+
+> **Note on tooling:** The Makefile wraps Terraform commands for convenience (`make deploy`, `make destroy`). However, `make` is not available on Windows by default and was not used during this phase. All commands were run as direct Terraform calls:
+> ```bash
+> terraform -chdir=infra init
+> terraform -chdir=infra apply -var="env_name=dev" -auto-approve
+> ```
+> The Makefile remains in the repo as a reference tool and is used by the GitHub Actions workflows on Linux runners where `make` is available.
 
 ---
 
@@ -164,10 +171,16 @@ Terraform prints this value at the end of every apply. In Phase 3, the GitHub Ac
 
 This one variable is the foundation of the whole project.
 
-- `make deploy ENV=dev` - my local environment (what I deployed in Phase 2)
-- `make deploy ENV=pr-123` - isolated stack for PR 123 (Phase 3 will do this automatically)
-- `make destroy ENV=pr-123` - teardown only that PR's resources
+| Command (Linux/Mac) | Equivalent direct command | What it does |
+|---------------------|--------------------------|--------------|
+| `make deploy ENV=dev` | `terraform -chdir=infra apply -var="env_name=dev"` | Local dev environment |
+| `make destroy ENV=dev` | `terraform -chdir=infra destroy -var="env_name=dev"` | Tear down dev |
 
-`pr-123` is not a real environment I deployed. It is an example name showing what Phase 3 will create automatically when a real pull request numbered 123 is opened on GitHub. In Phase 2 I only deployed `dev` by hand to prove the Terraform works.
+In Phase 2, I deployed only `env_name=dev` by hand using the direct Terraform commands. The `make` wrapper was not used because `make` is not installed on Windows.
 
-Every PR will get its own DynamoDB table, Lambda function, and API Gateway URL. Nothing is shared.
+`pr-123` style names are not something I ran manually. In Phase 3, GitHub Actions passes the real PR number automatically:
+```bash
+terraform apply -var="env_name=pr-6"
+```
+
+Every PR gets its own DynamoDB table, Lambda function, and API Gateway URL. Nothing is shared.

@@ -135,6 +135,23 @@ Both workflows use `github.event.pull_request.number` as the env_name. PR 6 gets
 
 ---
 
+## 🔧 A note on the Makefile
+
+The Makefile in the repo root wraps common Terraform commands behind short targets like `make deploy ENV=pr-6` and `make destroy ENV=pr-6`. It is a convenience layer, not a requirement.
+
+`make` is not available on Windows by default and was not installed during this project. All bootstrap and local Terraform commands were run directly:
+
+```bash
+terraform -chdir=infra/bootstrap init
+terraform -chdir=infra/bootstrap apply
+terraform -chdir=infra init -migrate-state
+terraform -chdir=infra destroy -var="env_name=pr-6" -auto-approve
+```
+
+The Makefile is used by the GitHub Actions workflows which run on Ubuntu Linux runners where `make` is available. On Windows, replace any `make` command with its direct Terraform equivalent.
+
+---
+
 ## 📊 Phase 3 measured result
 
 | Metric | Value |
