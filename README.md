@@ -1,5 +1,6 @@
 # 🏗️ Ephemeral Environments on AWS
 
+
 ![AWS](https://img.shields.io/badge/AWS-eu--central--1-FF9900?logo=amazon-aws&logoColor=white)
 ![Terraform](https://img.shields.io/badge/Terraform-%E2%89%A51.6-7B42BC?logo=terraform&logoColor=white)
 ![Python](https://img.shields.io/badge/Python-3.11+-3776AB?logo=python&logoColor=white)
