@@ -1,14 +1,11 @@
-# ============================================================
 # outputs.tf
-# Values that Terraform prints after apply finishes.
+# I print the live API URL after every apply so I can test immediately.
 #
-# The api_url is the live Invoke URL for this environment.
-# In Phase 2 this is used immediately to run curl tests.
-# In Phase 3 the GitHub Actions workflow will read this output
-# and post it as a PR comment automatically.
-# ============================================================
+# In Phase 3, the GitHub Actions workflow reads this output automatically
+# and posts it as a comment on the pull request.
+
 
 output "api_url" {
-  description = "The public Invoke URL for this environment. Use this with curl to test."
+  description = "Live Invoke URL for this environment. Paste into curl to test."
   value       = aws_apigatewayv2_stage.default.invoke_url
 }
