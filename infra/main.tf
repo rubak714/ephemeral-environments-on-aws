@@ -1,29 +1,26 @@
-# ============================================================
 # main.tf
-# Entry point for Terraform. Declares the version and
-# the providers (plugins) this project needs.
+# Entry point. I declare the Terraform version and the two providers
+# this project needs before any resource can be created.
 #
-# Think of providers like drivers. The AWS provider is the
-# driver that lets Terraform talk to AWS. The archive
-# provider is a helper that zips files automatically,
-# so I do not have to zip handler.py by hand like Phase 1.
-# ============================================================
+# Think of providers like device drivers.
+# The AWS provider is what lets Terraform talk to AWS.
+# The archive provider is a helper I use in lambda.tf to zip handler.py
+# automatically, so I never have to zip it by hand.
+
 
 terraform {
-  # This project requires Terraform 1.6 or newer.
+
   required_version = ">= 1.6"
 
   required_providers {
 
-    # The AWS provider. Without this, Terraform cannot create
-    # any AWS resource.
+    # Without the AWS provider, Terraform cannot create any AWS resource.
     aws = {
       source  = "hashicorp/aws"
       version = "~> 5.0"
     }
 
-    # The archive provider. Used in lambda.tf to zip handler.py
-    # automatically before uploading it to Lambda.
+    # I use this in lambda.tf to auto-zip handler.py before upload.
     archive = {
       source  = "hashicorp/archive"
       version = "~> 2.0"
@@ -31,8 +28,9 @@ terraform {
   }
 }
 
-# Tell the AWS provider which region to deploy into.
-# eu-central-1 is Frankfurt. Chosen for EU data residency.
+
+# I chose eu-central-1 (Frankfurt) for EU data residency.
+# The actual value comes from var.aws_region defined in variables.tf.
 provider "aws" {
   region = var.aws_region
 }
