@@ -9,7 +9,7 @@ What I built, what I learned, and how opening a pull request now provisions a fu
 Phase 2 gave me one command to deploy. Phase 3 removes that command entirely.
 
 ```
-Phase 2:   I run   →  make deploy ENV=pr-123
+Phase 2:   I run   →  terraform -chdir=infra apply -var="env_name=dev" -auto-approve
 Phase 3:   I open a PR  →  everything happens automatically
 ```
 
@@ -137,7 +137,7 @@ Both workflows use `github.event.pull_request.number` as the env_name. PR 6 gets
 
 ## 🔧 A note on the Makefile
 
-The Makefile in the repo root wraps common Terraform commands behind short targets like `make deploy ENV=pr-6` and `make destroy ENV=pr-6`. It is a convenience layer, not a requirement.
+The Makefile in the repo root wraps common Terraform commands behind short targets. It is a convenience layer, not a requirement.
 
 `make` is not available on Windows by default and was not installed during this project. All bootstrap and local Terraform commands were run directly:
 

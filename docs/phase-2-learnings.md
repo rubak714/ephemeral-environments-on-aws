@@ -171,12 +171,12 @@ Terraform prints this value at the end of every apply. In Phase 3, the GitHub Ac
 
 This one variable is the foundation of the whole project.
 
-| Command (Linux/Mac) | Equivalent direct command | What it does |
-|---------------------|--------------------------|--------------|
-| `make deploy ENV=dev` | `terraform -chdir=infra apply -var="env_name=dev"` | Local dev environment |
-| `make destroy ENV=dev` | `terraform -chdir=infra destroy -var="env_name=dev"` | Tear down dev |
+| Command I actually ran | What it does |
+|------------------------|--------------|
+| `terraform -chdir=infra apply -var="env_name=dev" -auto-approve` | Deploy the dev environment |
+| `terraform -chdir=infra destroy -var="env_name=dev" -auto-approve` | Tear down dev after testing |
 
-In Phase 2, I deployed only `env_name=dev` by hand using the direct Terraform commands. The `make` wrapper was not used because `make` is not installed on Windows.
+I deployed only `env_name=dev` by hand. The Makefile exists in the repo as a convenience wrapper for Linux and Mac users. `make` is not available on Windows by default and was not used during this phase.
 
 `pr-123` style names are not something I ran manually. In Phase 3, GitHub Actions passes the real PR number automatically:
 ```bash
