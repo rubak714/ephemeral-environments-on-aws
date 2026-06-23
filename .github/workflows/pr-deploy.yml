@@ -81,7 +81,9 @@ jobs:
       - name: Read API URL from Terraform output
         working-directory: infra
         run: |
-          API_URL=$(terraform output -raw api_url)
+          # Strip the trailing slash that the API Gateway stage URL includes.
+          # Without this, the comment ends up with //shorten instead of /shorten.
+          API_URL=$(terraform output -raw api_url | sed 's|/$||')
           echo "API_URL=$API_URL" >> $GITHUB_ENV
 
       # Step 7: Post the live URL as a comment on the PR.
