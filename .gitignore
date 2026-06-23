@@ -21,6 +21,7 @@ docs/*
 !docs/manual-baseline.md
 !docs/phase-1-learnings.md
 !docs/phase-2-learnings.md
+!docs/phase-3-learnings.md
 
 # Python
 __pycache__/
