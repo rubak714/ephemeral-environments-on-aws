@@ -1,0 +1,99 @@
+# pr-deploy.yml
+# This workflow runs every time a pull request is opened or updated.
+# It provisions a fresh isolated AWS environment for that PR and
+# posts the live URL as a comment so reviewers can test immediately.
+#
+# Flow:
+#   PR opened or new commit pushed
+#     -> GitHub Actions starts this workflow
+#       -> assumes the AWS role via OIDC (no passwords)
+#         -> terraform apply (creates Lambda, DynamoDB, API Gateway)
+#           -> reads the api_url output
+#             -> posts the URL as a PR comment
+
+
+name: PR Deploy
+
+on:
+  pull_request:
+    # Run when a PR is first opened and when new commits are pushed to it.
+    types: [opened, synchronize]
+
+# These permissions let the workflow:
+#   id-token: write  -> request the OIDC token from GitHub
+#   contents: read   -> check out the repo code
+#   pull-requests: write -> post a comment on the PR
+permissions:
+  id-token: write
+  contents: read
+  pull-requests: write
+
+jobs:
+  deploy:
+    name: Deploy PR environment
+    runs-on: ubuntu-latest
+
+    steps:
+
+      # Step 1: Download the repo code onto the Actions runner machine.
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # Step 2: Install Terraform on the runner.
+      # I pin to a specific version so the workflow never breaks
+      # because HashiCorp released a new version overnight.
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.9.0"
+          terraform_wrapper: false
+
+      # Step 3: Assume the AWS IAM role using OIDC.
+      # GitHub sends AWS a short-lived signed token. AWS verifies it,
+      # then returns temporary credentials that last 15 minutes.
+      # No AWS_ACCESS_KEY_ID or AWS_SECRET_ACCESS_KEY is ever stored.
+      - name: Assume AWS role via OIDC
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.AWS_ROLE_ARN }}
+          aws-region: ${{ vars.AWS_REGION }}
+
+      # Step 4: Download the AWS and archive providers declared in main.tf.
+      # -input=false prevents Terraform from waiting for user input in CI.
+      - name: Terraform init
+        working-directory: infra
+        run: terraform init -input=false
+
+      # Step 5: Create or update all AWS resources for this PR.
+      # github.event.pull_request.number is the PR number (e.g. 3).
+      # I pass it as env_name so this PR gets its own isolated stack
+      # named pr-3, separate from every other PR's stack.
+      - name: Terraform apply
+        working-directory: infra
+        run: |
+          terraform apply \
+            -var="env_name=pr-${{ github.event.pull_request.number }}" \
+            -input=false \
+            -auto-approve
+
+      # Step 6: Read the api_url output that Terraform printed.
+      # I store it in an environment variable so the next step can use it.
+      - name: Read API URL from Terraform output
+        working-directory: infra
+        run: |
+          API_URL=$(terraform output -raw api_url)
+          echo "API_URL=$API_URL" >> $GITHUB_ENV
+
+      # Step 7: Post the live URL as a comment on the PR.
+      # Anyone reviewing the PR can click the link and test the environment
+      # without running anything locally.
+      - name: Post environment URL as PR comment
+        uses: actions/github-script@v7
+        with:
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `## Environment ready\n\n**URL:** ${{ env.API_URL }}\n\nTest it:\n\`\`\`bash\n# Create a short URL\ncurl -s -X POST ${{ env.API_URL }}/shorten \\\n  -H "Content-Type: application/json" \\\n  -d \'{"url": "https://example.com"}\'\n\n# Follow the redirect\ncurl -v ${{ env.API_URL }}/<short_id>\n\`\`\`\n\nThis environment is automatically destroyed when the PR closes.`
+            })

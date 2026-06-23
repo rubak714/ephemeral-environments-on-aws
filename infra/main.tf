@@ -12,6 +12,18 @@ terraform {
 
   required_version = ">= 1.6"
 
+  # Remote state backend.
+  # I store state in S3 so GitHub Actions can read it between workflow runs.
+  # The bucket and table were created by infra/bootstrap/.
+  # Replace the bucket name with the value from: terraform -chdir=infra/bootstrap output state_bucket
+  backend "s3" {
+    bucket         = "ephemeral-env-tfstate-896725786477"
+    key            = "envs/terraform.tfstate"
+    region         = "eu-central-1"
+    dynamodb_table = "terraform-state-lock"
+    encrypt        = true
+  }
+
   required_providers {
 
     # Without the AWS provider, Terraform cannot create any AWS resource.
