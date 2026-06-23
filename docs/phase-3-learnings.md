@@ -150,6 +150,12 @@ terraform -chdir=infra destroy -var="env_name=pr-6" -auto-approve
 
 The Makefile is used by the GitHub Actions workflows which run on Ubuntu Linux runners where `make` is available. On Windows, replace any `make` command with its direct Terraform equivalent.
 
+To manually destroy a PR environment on Windows:
+```bash
+terraform -chdir=infra destroy -var="env_name=pr-6" -auto-approve
+```
+Replace `pr-6` with the actual PR number. This only removes resources for that specific environment and leaves the bootstrap and all other environments untouched.
+
 ---
 
 ## 📊 Phase 3 measured result
