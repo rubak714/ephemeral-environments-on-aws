@@ -22,6 +22,7 @@ docs/*
 !docs/phase-1-learnings.md
 !docs/phase-2-learnings.md
 !docs/phase-3-learnings.md
+!docs/troubleshooting.md
 
 # Python
 __pycache__/
