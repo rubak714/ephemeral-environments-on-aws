@@ -31,6 +31,12 @@ The `-v` flag shows the `301` status and `location: https://example.com` header.
 
 ---
 
+> **Note:** I destroyed the entire stack with `terraform destroy` after testing.
+> All resources shown above no longer exist. The screenshots are the proof of work.
+> No live URL, no table data, and no AWS costs remain from this phase.
+
+---
+
 ## ☁️ AWS console: what Terraform built
 
 ### Lambda
@@ -158,8 +164,10 @@ Terraform prints this value at the end of every apply. In Phase 3, the GitHub Ac
 
 This one variable is the foundation of the whole project.
 
-- `make deploy ENV=dev` - my local environment
-- `make deploy ENV=pr-123` - isolated stack for PR 123
+- `make deploy ENV=dev` - my local environment (what I deployed in Phase 2)
+- `make deploy ENV=pr-123` - isolated stack for PR 123 (Phase 3 will do this automatically)
 - `make destroy ENV=pr-123` - teardown only that PR's resources
 
-Every PR gets its own DynamoDB table, Lambda function, and API Gateway URL. Nothing is shared.
+`pr-123` is not a real environment I deployed. It is an example name showing what Phase 3 will create automatically when a real pull request numbered 123 is opened on GitHub. In Phase 2 I only deployed `dev` by hand to prove the Terraform works.
+
+Every PR will get its own DynamoDB table, Lambda function, and API Gateway URL. Nothing is shared.
