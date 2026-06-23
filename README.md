@@ -77,7 +77,7 @@ Region: `eu-central-1` (Frankfurt). I chose Frankfurt for EU data residency, whi
 | # | Phase | What it covers | Status |
 |---|-------|----------------|--------|
 | 0 | Setup and safety | AWS account, billing alarm, IAM user, toolchain check | ✅ Done |
-| 1 | Manual baseline | 48 steps, 39 minutes by hand | ✅ Done |
+| 1 | Manual baseline | 41 steps, 39 minutes by hand | ✅ Done |
 | 2 | Infrastructure as Code | Terraform modules, Makefile (3 min to apply) | ✅ Done |
 | 3 | CI/CD and ephemeral environments | GitHub Actions, OIDC, PR automation | ✅ Done |
 | 4 | Observability | CloudWatch alarms, X-Ray tracing, structured JSON logs | 🔲 Pending |

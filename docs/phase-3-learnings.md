@@ -164,7 +164,7 @@ Replace `pr-6` with the actual PR number. This only removes resources for that s
 |--------|-------|
 | Stored AWS credentials in GitHub | 0 |
 | Manual steps to deploy a PR environment | 0 |
-| Time from PR open to live URL in comment | Under 4 minutes |
+| Time from PR open to live URL in comment | Under 4 minutes (observed during PR #6 test, not formally benchmarked) |
 | Environments left running after PR close | 0 (destroyed automatically) |
 
 This is the number that matters for the portfolio: opening a pull request is the only human action required for a full isolated AWS environment to appear and then disappear.

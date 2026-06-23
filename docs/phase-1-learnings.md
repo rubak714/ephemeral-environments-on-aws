@@ -151,8 +151,8 @@ If DynamoDB had no record of `OddhuL`, Lambda would return `404 Not found` inste
 
 | Metric | Value |
 |--------|-------|
-| Total manual steps | 48 |
+| Total manual steps | 41 |
 | Total time by hand | 39 minutes 1 second |
 | Errors requiring a redo | 0 |
 
-This is the **before** number. Phase 2 replaces all 48 steps with one Terraform command.
+This is the **before** number. Phase 2 replaces all 41 steps with one Terraform command.
