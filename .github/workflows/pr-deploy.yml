@@ -86,9 +86,20 @@ jobs:
           API_URL=$(terraform output -raw api_url | sed 's|/$||')
           echo "API_URL=$API_URL" >> $GITHUB_ENV
 
-      # Step 7: Post the live URL as a comment on the PR.
-      # Anyone reviewing the PR can click the link and test the environment
-      # without running anything locally.
+      # Step 7: Run a real POST /shorten during the workflow itself.
+      # This creates an actual short URL in DynamoDB and captures the short_id.
+      # The comment then shows a real, working short_id instead of a placeholder.
+      - name: Create test short URL
+        run: |
+          SHORT_ID=$(curl -s -X POST ${{ env.API_URL }}/shorten \
+            -H "Content-Type: application/json" \
+            -d '{"url": "https://example.com"}' \
+            | python3 -c "import sys, json; print(json.load(sys.stdin)['short_id'])")
+          echo "SHORT_ID=$SHORT_ID" >> $GITHUB_ENV
+
+      # Step 8: Post the live URL as a comment on the PR.
+      # The comment contains real, working curl commands with no placeholders.
+      # Anyone reviewing can copy-paste them directly.
       - name: Post environment URL as PR comment
         uses: actions/github-script@v7
         with:
@@ -97,5 +108,5 @@ jobs:
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              body: `## Environment ready\n\n**URL:** ${{ env.API_URL }}\n\nTest it:\n\`\`\`bash\n# Create a short URL\ncurl -s -X POST ${{ env.API_URL }}/shorten \\\n  -H "Content-Type: application/json" \\\n  -d \'{"url": "https://example.com"}\'\n\n# Follow the redirect\ncurl -v ${{ env.API_URL }}/<short_id>\n\`\`\`\n\nThis environment is automatically destroyed when the PR closes.`
+              body: `## Environment ready\n\n**Base URL:** ${{ env.API_URL }}\n\nTest the redirect (copy and run):\n\`\`\`bash\n# 1. This short URL was created during deploy\ncurl -v ${{ env.API_URL }}/${{ env.SHORT_ID }}\n\`\`\`\n\nExpected response: \`301\` with \`location: https://example.com\`\n\nCreate your own:\n\`\`\`bash\ncurl -s -X POST ${{ env.API_URL }}/shorten \\\n  -H "Content-Type: application/json" \\\n  -d \'{"url": "https://example.com"}\'\n\`\`\`\n\nThis environment is automatically destroyed when the PR closes.`
             })
