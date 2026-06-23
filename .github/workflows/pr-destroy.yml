@@ -1,0 +1,71 @@
+# pr-destroy.yml
+# This workflow runs when a pull request is closed (merged or manually closed).
+# It destroys every AWS resource that pr-deploy.yml created for that PR.
+#
+# Why this matters:
+# Without this, every merged or closed PR leaves behind a live Lambda,
+# a DynamoDB table, and an API Gateway that keep accumulating.
+# This workflow ensures the environment is gone within minutes of close.
+#
+# Flow:
+#   PR closed or merged
+#     -> GitHub Actions starts this workflow
+#       -> assumes the AWS role via OIDC
+#         -> terraform destroy (deletes Lambda, DynamoDB, API Gateway)
+#           -> environment is gone, cost drops to zero
+
+
+name: PR Destroy
+
+on:
+  pull_request:
+    # Run only when a PR is closed. "closed" covers both merged and manually closed.
+    types: [closed]
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  destroy:
+    name: Destroy PR environment
+    runs-on: ubuntu-latest
+
+    steps:
+
+      # Step 1: Check out the code.
+      # Terraform needs the .tf files to know what it is destroying.
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # Step 2: Install the same Terraform version used in pr-deploy.yml.
+      # Mismatched versions can cause state compatibility issues.
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.9.0"
+          terraform_wrapper: false
+
+      # Step 3: Assume the AWS role the same way pr-deploy.yml does.
+      - name: Assume AWS role via OIDC
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.AWS_ROLE_ARN }}
+          aws-region: ${{ vars.AWS_REGION }}
+
+      # Step 4: Init. Terraform needs to connect to the S3 backend
+      # to load the state file that pr-deploy.yml wrote.
+      - name: Terraform init
+        working-directory: infra
+        run: terraform init -input=false
+
+      # Step 5: Destroy all resources for this PR's environment.
+      # I pass the same env_name that pr-deploy.yml used so Terraform
+      # targets exactly this PR's stack and nothing else.
+      - name: Terraform destroy
+        working-directory: infra
+        run: |
+          terraform destroy \
+            -var="env_name=pr-${{ github.event.pull_request.number }}" \
+            -input=false \
+            -auto-approve
