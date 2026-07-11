@@ -57,6 +57,13 @@ resource "aws_lambda_function" "url_shortener" {
     }
   }
 
+  # Active tracing sends one trace per request to X-Ray.
+  # X-Ray shows me exactly how long the DynamoDB call took versus the
+  # Python logic, broken down per invocation. PassThrough would disable this.
+  tracing_config {
+    mode = "Active"
+  }
+
   tags = {
     Environment = var.env_name
     Project     = "ephemeral-environments"
