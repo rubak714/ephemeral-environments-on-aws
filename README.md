@@ -81,7 +81,7 @@ Region: `eu-central-1` (Frankfurt). I chose Frankfurt for EU data residency, whi
 | 2 | Infrastructure as Code | Terraform modules, Makefile (3 min to apply) | ✅ Done |
 | 3 | CI/CD and ephemeral environments | GitHub Actions, OIDC, PR automation | ✅ Done |
 | 4 | Observability | CloudWatch alarms, X-Ray tracing, structured JSON logs | ✅ Done (apply pending AWS access) |
-| 5 | One optimization pass | Graviton, right-sized Lambda memory, 1000-request load test | 🔲 Pending |
+| 5 | One optimization pass | Graviton, right-sized Lambda memory, 1000-request load test | ✅ Done (load test pending AWS access) |
 | 6 | Teaching artifact | Final README, architecture diagram, four measured metrics | 🔲 Pending |
 
 Stretch tracks (after the core is done): an AWS-native variant with CodePipeline and CloudFormation, a Docker and EKS setup with Prometheus for a serverless versus Kubernetes comparison, and a small Go CLI tool called `envctl` that lists and destroys orphaned environments.
