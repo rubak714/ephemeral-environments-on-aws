@@ -23,3 +23,19 @@ variable "aws_region" {
   type        = string
   default     = "eu-central-1"
 }
+
+
+# Lambda memory controls both RAM and vCPU allocation.
+# More memory = more CPU = faster execution = higher per-ms cost.
+# 256 MB is the sweet spot for Python with boto3: cold starts are
+# noticeably faster than 128 MB, and the cost difference at this
+# traffic level is a fraction of a cent per month.
+#
+# I expose this as a variable so the load test in Phase 5 can sweep
+# different values (128, 256, 512) by re-applying with -var rather
+# than editing the Terraform source.
+variable "lambda_memory_mb" {
+  description = "Lambda memory in MB. Controls both RAM and vCPU. Valid range: 128-10240."
+  type        = number
+  default     = 256
+}
