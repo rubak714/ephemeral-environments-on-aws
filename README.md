@@ -5,7 +5,7 @@
 ![Terraform](https://img.shields.io/badge/Terraform-%E2%89%A51.6-7B42BC?logo=terraform&logoColor=white)
 ![Python](https://img.shields.io/badge/Python-3.11+-3776AB?logo=python&logoColor=white)
 ![GitHub Actions](https://img.shields.io/badge/GitHub_Actions-CI%2FCD-2088FF?logo=github-actions&logoColor=white)
-![Status](https://img.shields.io/badge/status-in_progress-yellow)
+![Status](https://img.shields.io/badge/status-metrics_pending-orange)
 ![License](https://img.shields.io/badge/license-MIT-green)
 
 Every pull request in this repository automatically spins up a fresh, isolated AWS environment, runs an integration test against it, posts the live URL as a PR comment, and tears everything down when the PR closes.
@@ -66,7 +66,7 @@ The same GitHub Actions workflow handles both events: `apply` on PR open and `de
 | Amazon API Gateway | HTTP endpoint in front of Lambda |
 | Amazon DynamoDB | URL mapping store |
 | Amazon CloudWatch | Logs, alarms, and dashboard |
-| Makefile | Wrapper for the most common commands |
+| AWS X-Ray | Distributed tracing, per-request DynamoDB latency breakdown |
 
 Region: `eu-central-1` (Frankfurt). I chose Frankfurt for EU data residency, which is a real constraint in consulting work and worth being explicit about.
 
@@ -82,7 +82,7 @@ Region: `eu-central-1` (Frankfurt). I chose Frankfurt for EU data residency, whi
 | 3 | CI/CD and ephemeral environments | GitHub Actions, OIDC, PR automation | ✅ Done |
 | 4 | Observability | CloudWatch alarms, X-Ray tracing, structured JSON logs | ✅ Done (apply pending AWS access) |
 | 5 | One optimization pass | Graviton, right-sized Lambda memory, 1000-request load test | ✅ Done (load test pending AWS access) |
-| 6 | Teaching artifact | Final README, architecture diagram, four measured metrics | 🔲 Pending |
+| 6 | Teaching artifact | Final README, architecture diagram, four measured metrics | ✅ Done (load test numbers pending AWS access) |
 
 Stretch tracks (after the core is done): an AWS-native variant with CodePipeline and CloudFormation, a Docker and EKS setup with Prometheus for a serverless versus Kubernetes comparison, and a small Go CLI tool called `envctl` that lists and destroys orphaned environments.
 
@@ -90,14 +90,17 @@ Stretch tracks (after the core is done): an AWS-native variant with CodePipeline
 
 ## 📊 Honest metrics
 
-All numbers in this project come from measurements I took myself. When a result depends on a run I have not yet completed, I write a placeholder like `[MEASURED: fill in after running]` rather than inventing a figure. No placeholder survives into the final README.
+All numbers come from runs I took myself. I do not invent figures. When a result depends on a run I have not yet completed, I write `[MEASURED: fill in after running]` rather than guessing.
 
-The four metrics I am working toward:
-
-1. Provisioning time: manual steps and minutes versus the automated pipeline
-2. Idle cost: per-environment spend reduced to near zero via auto-teardown
-3. Time to root cause: seeded failure found via X-Ray tracing versus raw log reading
-4. Performance: p99 latency and cost change from the Graviton and memory right-sizing pass
+| What I measured | Manual baseline | Automated |
+|----------------|----------------|-----------|
+| Deploy steps | 41 steps across 3 AWS consoles | 1 command: `git push` |
+| Deploy time | 39 minutes 1 second | ~3 minutes observed (PR #6, not formally benchmarked) |
+| Credentials stored | Long-lived AWS access key in GitHub Secrets | 0 (OIDC; token lives 15 minutes) |
+| Environments left running after close | Manual teardown required | 0 (auto-destroyed on PR close) |
+| Idle cost per environment | Accrues until manually destroyed | $0 after PR close |
+| Lambda p99 latency (1000 requests) | N/A (no load test in Phase 1) | [MEASURED: fill in after running] ms |
+| Load test error rate | N/A | [MEASURED: fill in after running] |
 
 ---
 
@@ -105,17 +108,14 @@ The four metrics I am working toward:
 
 ```
 .
-├── app/           # Python Lambda handler
-├── infra/         # Terraform modules
-├── .github/       # GitHub Actions workflows
+├── app/           # Python Lambda handler (handler.py)
+├── infra/         # Terraform modules (all AWS resources)
+│   └── bootstrap/ # One-time setup: S3 state backend, OIDC role (never destroy)
+├── scripts/       # Load test and utility scripts
+├── .github/       # GitHub Actions workflows (deploy on PR open, destroy on PR close)
 ├── images/        # Architecture diagrams
-├── cli/           # Go CLI tool (envctl), added in the final stretch
-├── aws-native/    # Stretch A: CodePipeline and CloudFormation
-├── docs/          # Build playbook and runbooks (local only, not in repo)
-└── Makefile
+└── docs/          # Phase learnings and troubleshooting log (selected files in repo)
 ```
-
-This layout fills in progressively as each phase completes. Folders that do not exist yet are listed here so the structure is visible from the start.
 
 ---
 
