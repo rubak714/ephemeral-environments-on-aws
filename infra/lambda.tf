@@ -46,6 +46,11 @@ resource "aws_lambda_function" "url_shortener" {
   # arm64 runs on AWS Graviton. Same price as x86, roughly 20% better throughput.
   architectures = ["arm64"]
 
+  # Memory (and the proportional vCPU slice) is set by the variable defined in variables.tf.
+  # I can run: terraform apply -var="lambda_memory_mb=512" to test a different tier
+  # without editing this file. The Phase 5 load test sweeps 128, 256, and 512.
+  memory_size = var.lambda_memory_mb
+
   # The role I defined in iam.tf. It permits CloudWatch Logs and DynamoDB access.
   role = aws_iam_role.lambda_exec.arn
 
