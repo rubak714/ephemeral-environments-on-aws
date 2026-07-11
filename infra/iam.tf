@@ -55,6 +55,20 @@ data "aws_iam_policy_document" "lambda_permissions" {
     resources = ["arn:aws:logs:*:*:*"]
   }
 
+  # X-Ray: Lambda sends trace segments and telemetry when active tracing is on.
+  # These three actions are the minimum X-Ray requires. Without them Lambda
+  # silently drops trace data and the service map stays empty.
+  statement {
+    effect = "Allow"
+    actions = [
+      "xray:PutTraceSegments",
+      "xray:PutTelemetryRecords",
+      "xray:GetSamplingRules",
+      "xray:GetSamplingTargets",
+    ]
+    resources = ["*"]
+  }
+
   # I give Lambda only the two DynamoDB actions handler.py actually calls.
   #
   #   GetItem - the GET /{id} route reads a short URL from the table
